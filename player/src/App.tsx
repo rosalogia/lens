@@ -2,10 +2,12 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import type { EpisodeData } from "./types";
 import { useSubtitleSync } from "./hooks/useSubtitleSync";
 import { VideoPlayer } from "./components/VideoPlayer";
+import { VideoControls } from "./components/VideoControls";
 import { SubtitleBar } from "./components/SubtitleBar";
 
 function App() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [episode, setEpisode] = useState<EpisodeData | null>(null);
   const [overlapPx, setOverlapPx] = useState(0);
 
@@ -20,7 +22,6 @@ function App() {
     episode?.subtitles ?? []
   );
 
-  // Calculate the black bar overlap once the video element is laid out
   const updateOverlap = useCallback(() => {
     const video = videoRef.current;
     if (!video || !episode) return;
@@ -53,12 +54,16 @@ function App() {
 
   return (
     <div className="min-h-screen bg-neutral-900 flex flex-col items-center pt-8">
-      <div className="w-full max-w-3xl">
+      <div
+        ref={containerRef}
+        className="w-full max-w-3xl flex flex-col bg-black [&:fullscreen]:max-w-none [&:fullscreen]:justify-center"
+      >
         <VideoPlayer
           ref={videoRef}
           src="/videos/episode_1.mp4"
         />
-        <SubtitleBar subtitle={activeSubtitle} overlapPx={overlapPx} />
+        <VideoControls videoRef={videoRef} containerRef={containerRef} overlapPx={overlapPx} />
+        <SubtitleBar subtitle={activeSubtitle} />
       </div>
     </div>
   );

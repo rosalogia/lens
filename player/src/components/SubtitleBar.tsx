@@ -4,10 +4,9 @@ import { SubtitleWord } from "./SubtitleWord";
 
 interface SubtitleBarProps {
   subtitle: Subtitle | null;
-  overlapPx: number;
 }
 
-export function SubtitleBar({ subtitle, overlapPx }: SubtitleBarProps) {
+export function SubtitleBar({ subtitle }: SubtitleBarProps) {
   const [showDetails, setShowDetails] = useState(false);
   const [activeWordIndex, setActiveWordIndex] = useState<number | null>(null);
 
@@ -29,8 +28,7 @@ export function SubtitleBar({ subtitle, overlapPx }: SubtitleBarProps) {
 
   return (
     <div
-      className="bg-black relative z-10 py-4"
-      style={{ marginTop: `-${overlapPx}px` }}
+      className="bg-black pt-8 pb-4"
     >
       {subtitle && (
         <div className="flex flex-col items-center gap-2">

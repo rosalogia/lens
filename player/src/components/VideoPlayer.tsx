@@ -10,7 +10,6 @@ export const VideoPlayer = forwardRef<HTMLVideoElement, VideoPlayerProps>(
       <video
         ref={ref}
         src={src}
-        controls
         className="w-full"
       />
     );
