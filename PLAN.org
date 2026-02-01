@@ -1,0 +1,127 @@
+#+TITLE: Interactive Subtitle Player — Implementation Plan
+#+STARTUP: overview
+
+* Overview
+
+A web-based video player for The Legend of Luo Xiaohei that displays
+interactive Chinese subtitles. Viewers can hover words for pinyin and
+click words for English translations.
+
+* Key Decision: Subtitle Overlay Strategy
+
+The videos have Chinese subtitles baked into the bottom black bar.
+We need to decide how to handle this relative to our interactive overlay.
+
+** Option A: Overlay on top of baked-in subs
+- Render our interactive text directly over the existing subtitle region
+- Match font size/position so our text covers the original
+- Pros: Simpler, no video modification needed
+- Cons: Slight misalignment would show doubled text; font matching is fragile across episodes
+
+** Option B: Hide baked-in subs, render our own
+- Use CSS to crop or cover the bottom black bar of the video
+- Render fully custom subtitles below or over the cropped area
+- Pros: Full control over styling, no alignment issues
+- Cons: Need to know exact black bar height per episode (we already detect this)
+
+** Recommendation: Option B
+We already detect the black bar boundary in =extract_subs.py=. We can
+store that value per episode and use it to crop. This gives us full
+control and avoids font-matching headaches.
+
+* Architecture
+
+** Tech stack
+- Static site (no server needed — all data is pre-generated)
+- Vanilla HTML/CSS/JS, or lightweight framework (Svelte/Preact if complexity warrants)
+- HTML5 =<video>= element for playback
+- Pre-generated =subtitles.json= loaded per episode
+
+** File structure
+#+begin_example
+player/
+  index.html          — episode selector / main page
+  player.html         — the actual player page
+  css/
+    player.css
+  js/
+    player.js         — video sync, subtitle rendering, hover/click logic
+  data/
+    episodes.json     — episode metadata (title, video path, crop_y, etc.)
+    episode_01/
+      subtitles.json  — output from process_subs.py
+    episode_02/
+      subtitles.json
+    ...
+#+end_example
+
+Video files would live outside the player directory (or be symlinked),
+since they're large and shouldn't be in version control.
+
+* Implementation Components
+
+** 1. Subtitle Renderer
+- Given the current video time, find the active subtitle from =subtitles.json=
+- Render each word as a separate =<span>= element
+- Position the subtitle bar below the (cropped) video frame
+
+*** Timing
+Each subtitle entry has a =timestamp= (when it first appears). The subtitle
+stays visible until the next subtitle's timestamp, or until a gap is detected
+(e.g., >3s between entries means the first one should disappear).
+
+We may want to refine this: =extract_subs.py= could also record an =end=
+timestamp by noting when a subtitle disappears (transitions to blank).
+This would give more accurate timing. Worth adding before the full batch run.
+
+** 2. Word Hover (Pinyin)
+- CSS =:hover= on each word =<span>= shows a pinyin tooltip above the word
+- Use a positioned =::after= pseudo-element or a small tooltip div
+- Pinyin comes directly from the pre-generated data
+
+** 3. Word Click (English)
+- Clicking a word shows its English translation
+- Could appear as a popup/tooltip near the word, or in a fixed sidebar/panel
+- Click again or click elsewhere to dismiss
+- A sidebar might be better UX — lets you build up a "vocabulary list" as you watch
+
+** 4. Video Cropping
+- The video element is displayed with =object-fit= and =object-position= to
+  hide the bottom black bar
+- Or: wrap in a container with =overflow: hidden= and shift the video up
+- The crop height comes from =episodes.json= metadata
+
+** 5. Subtitle Sync
+- Poll =video.currentTime= on =requestAnimationFrame= or =timeupdate= event
+- Binary search the sorted subtitle list to find the active entry
+- Only re-render when the active subtitle changes
+
+* Potential Refinements
+
+** End timestamps
+Currently =extract_subs.py= only records when a subtitle appears. Adding
+end timestamps (when the frame goes blank or changes) would improve sync.
+This is a small change to the extraction script — track when =is_blank=
+returns True after a non-blank sequence.
+
+** Sentence-level translation
+In addition to per-word translation, showing a full sentence translation
+on click/hover could help learners understand grammar and word order.
+Could be added to =process_subs.py= output easily.
+
+** Keyboard shortcuts
+- Space: play/pause
+- Left/Right: skip back/forward 5s
+- R: replay current subtitle from its start time
+- P: toggle persistent pinyin mode
+
+* Open Questions
+
+1. Should the video files be served locally (file://), or do we need a
+   simple local dev server? (Video + CORS usually requires a server.)
+
+2. For the interactive overlay, do we want a fixed subtitle bar below
+   the video, or floating text positioned over the video frame?
+
+3. Do we want to support mobile/touch? (Hover doesn't work on touch —
+   would need tap-for-pinyin, long-press-for-English or similar.)
