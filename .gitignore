@@ -10,12 +10,18 @@ wheels/
 .venv
 .env
 
-# Video files
+# Video and episode files
 *.flv
 *.mp4
+episodes/
 
-# Test/generated outputs
+# Pipeline output (extracted frames, manifests, processed subtitles)
+out/
+
+# Test outputs
 test/out/
+
+# Player runtime data (videos and subtitle JSON served by dev server)
 player/public/videos/
 player/public/data/
 

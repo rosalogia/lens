@@ -6,12 +6,15 @@ import {
   MdVolumeOff,
   MdFullscreen,
   MdFullscreenExit,
+  MdMenuBook,
 } from "react-icons/md";
 
 interface VideoControlsProps {
   videoRef: React.RefObject<HTMLVideoElement | null>;
   containerRef: React.RefObject<HTMLDivElement | null>;
   overlapPx: number;
+  autoPause: boolean;
+  onAutoPauseChange: (value: boolean) => void;
 }
 
 function formatTime(seconds: number): string {
@@ -21,7 +24,7 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-export function VideoControls({ videoRef, containerRef, overlapPx }: VideoControlsProps) {
+export function VideoControls({ videoRef, containerRef, overlapPx, autoPause, onAutoPauseChange }: VideoControlsProps) {
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -175,6 +178,15 @@ export function VideoControls({ videoRef, containerRef, overlapPx }: VideoContro
           />
         )}
       </div>
+
+      {/* Study Mode (auto-pause) */}
+      <button
+        onClick={() => onAutoPauseChange(!autoPause)}
+        className={`transition-colors ${autoPause ? "text-green-400 hover:text-green-300" : "text-white/50 hover:text-white"}`}
+        title={autoPause ? "Study mode ON (pauses after each subtitle)" : "Study mode OFF"}
+      >
+        <MdMenuBook size={22} />
+      </button>
 
       {/* Fullscreen */}
       <button

@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import type { Subtitle } from "../types";
 import { SubtitleWord } from "./SubtitleWord";
+import { MdReplay, MdSkipNext } from "react-icons/md";
 
 interface SubtitleBarProps {
   subtitle: Subtitle | null;
+  onSeekToStart?: () => void;
+  onSeekToEnd?: () => void;
 }
 
-export function SubtitleBar({ subtitle }: SubtitleBarProps) {
+export function SubtitleBar({ subtitle, onSeekToStart, onSeekToEnd }: SubtitleBarProps) {
   const [showDetails, setShowDetails] = useState(false);
   const [activeWordIndex, setActiveWordIndex] = useState<number | null>(null);
 
@@ -32,21 +35,41 @@ export function SubtitleBar({ subtitle }: SubtitleBarProps) {
     >
       {subtitle && (
         <div className="flex flex-col items-center gap-2">
-          <div className="flex items-center gap-0.5">
-            {subtitle.words.map((word, i) => (
-              <SubtitleWord
-                key={`${subtitle.start}-${i}`}
-                word={word}
-                showEnglish={activeWordIndex === i}
-                onClick={() => handleWordClick(i)}
-              />
-            ))}
+          <div className="flex items-center gap-2">
+            {/* Replay button */}
             <button
-              onClick={handleDetailsClick}
-              className="ml-3 w-6 h-6 rounded-full bg-white/15 hover:bg-white/25 text-white/60 hover:text-white text-xs flex items-center justify-center transition-colors shrink-0"
-              title="Show translation"
+              onClick={onSeekToStart}
+              className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-white/50 hover:text-white flex items-center justify-center transition-colors shrink-0"
+              title="Replay subtitle"
             >
-              ?
+              <MdReplay size={18} />
+            </button>
+
+            <div className="flex items-center gap-0.5">
+              {subtitle.words.map((word, i) => (
+                <SubtitleWord
+                  key={`${subtitle.start}-${i}`}
+                  word={word}
+                  showEnglish={activeWordIndex === i}
+                  onClick={() => handleWordClick(i)}
+                />
+              ))}
+              <button
+                onClick={handleDetailsClick}
+                className="ml-3 w-6 h-6 rounded-full bg-white/15 hover:bg-white/25 text-white/60 hover:text-white text-xs flex items-center justify-center transition-colors shrink-0"
+                title="Show translation"
+              >
+                ?
+              </button>
+            </div>
+
+            {/* Skip to end button */}
+            <button
+              onClick={onSeekToEnd}
+              className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-white/50 hover:text-white flex items-center justify-center transition-colors shrink-0"
+              title="Skip to end of subtitle"
+            >
+              <MdSkipNext size={18} />
             </button>
           </div>
 
