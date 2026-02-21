@@ -18,9 +18,7 @@ Source video (.flv/.mp4)
   │                       OCR → word segmentation → pinyin → per-word translation
   │                       → sentence translation → grammar notes
   │
-  └─ batch_process.sh    Orchestrates the pipeline for multiple episodes,
-                          handles multi-part video concatenation (ffmpeg),
-                          copies results to the player's public/ directory
+  └─ ffmpeg              Concatenates multi-part episodes, converts .flv → .mp4
 ```
 
 The player loads the pre-generated subtitle JSON and syncs it to video playback with binary search on timestamps.
@@ -92,8 +90,6 @@ uv run python process_subs.py out/episode_1/manifest.json
 
 This produces `out/episode_1/subtitles.json`. Copy it to `player/public/data/episode_1/subtitles.json` for the player to use.
 
-See `batch_process.sh` for an example of processing multiple episodes end-to-end.
-
 ### Player
 
 ```bash
@@ -118,7 +114,6 @@ The player expects:
 ```
 ├── extract_subs.py          # Step 1: Video → unique subtitle frame PNGs
 ├── process_subs.py          # Step 2: Subtitle PNGs → structured JSON via Claude
-├── batch_process.sh         # Orchestrates the full pipeline for episodes 2-12
 ├── PLAN.org                 # Original design document
 ├── pyproject.toml           # Python dependencies
 │
