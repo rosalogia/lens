@@ -15,6 +15,9 @@ wheels/
 *.mp4
 episodes/
 
+# Local batch scripts (contain machine-specific paths)
+batch_*.sh
+
 # Pipeline output (extracted frames, manifests, processed subtitles)
 out/
 
